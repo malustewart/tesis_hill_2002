@@ -1,0 +1,9 @@
+__pycache__
+configs/
+mediciones/
+mlartifacts/
+out/
+*.gsheet
+*.db
+dummy_spectrum.csv
+plot_osa_output.py
