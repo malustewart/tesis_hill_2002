@@ -7,3 +7,5 @@ out/
 *.db
 dummy_spectrum.csv
 plot_osa_output.py
+informe/*.pdf
+informe/assets/*setup.svg

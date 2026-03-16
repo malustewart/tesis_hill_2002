@@ -1,0 +1,26 @@
+[SetupDescription]
+name = "Hill2002 single ring laser setup A"
+coupler = "Newport - SN:TDC144349F009"
+tbf = "Newport - PN:TF-1565-0.8-N-3.0-1-Z - SN:405396"
+tbf_bw_nm = 1
+tap1 = "PN:FOBC-1-15-01-L-1-S-2 - SN:21015938"
+tap2 = "PN:FOBC-1-15-01-L-1-S-2 - SN:21015500"
+polarization_splitter = "PN:PFC1550F PM - SN:19074723"
+soa = "SOA: PN:OPA-20-N-C-FP - SN:15-04-020709 -- Board: PN:EB-2-MSA"
+ext_laser = "Laser: PN:FU-641SEA-1 - SN:013908 -- Board: THORLABS LM41S2 -- Controller: ILX Lightwave LDC-3908 Laser Diode Controller"
+ext_laser_lambda_min_nm = 1552.5
+ext_laser_lambda_max_nm = 1560.0
+PC1 = "Polarite General Photonics"
+PC2 = "LIAT Custom (rojo)"
+
+[SetupConfig]
+coupler_position = 30.0
+tbf_lambda_nm = 1550.5
+soa_I = 100
+soa_T = 20
+ext_laser_T = 20
+
+[ExperimentParams]
+ext_laser_I_min = 10
+ext_laser_I_max = 150
+ext_laser_I_steps = 10
