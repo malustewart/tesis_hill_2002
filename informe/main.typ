@@ -190,8 +190,13 @@ en 25: 10% (extrapolado)
 
 #figure(
   image("assets/hill2002_two_rings_setup.pdf"),
-  caption: [Setup de dos anillos utilizado]
+  caption: [Setup de dos anillos (versión A).]
 )<fig:two_rings_setup>
+
+#figure(
+  image("assets/hill2002_two_rings_setup_B.pdf"),
+  caption: [Setup de dos anillos (versión B).]
+)<fig:two_rings_setup_B>
 
 
 = Anexo
