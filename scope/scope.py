@@ -231,11 +231,11 @@ def load_signal(filepath: str | Path) -> dict[str, np.ndarray]:
 # Saving
 # ============================================================
 
-def save_acquisition(
+def save_signal(
     data: Dict[str, np.ndarray],
     name: str = "scope",
     timestamp: str | None = None,
-    outdir: Path | str = Path("output"),
+    outdir: Path | str = Path("out"),
     save_csv: bool = True,
     save_npz: bool = True,
 ):
@@ -273,15 +273,58 @@ def save_acquisition(
 
     return filenames
 
+# ============================================================
+# Plotting
+# ============================================================
 
+def plot_signal(
+    signal: np.ndarray,
+    y_axis: List[str] | None = None,
+    x_axis: str = 't',
+    show: bool = True,
+    save_path: str | None = None,
+    labels: Dict[str] = {},
+    xmin: float = 0, 
+    xmax: float = np.inf,
+    xlabel: str = 't[s]',
+    ylabel: str = 'V[V]',
+):
+    X = signal[x_axis]
+
+    mask = (X >= xmin) & (X <= xmax)
+    signal_masked = {k: signal[k][mask] for k in signal}
+
+    if not y_axis:
+        y_axis = [k for k in signal_masked if k != 't']
+
+    Y = [signal_masked[ch_name] for ch_name in y_axis]
+
+    for ch_name in y_axis:
+        labels.setdefault(ch_name, ch_name)
+
+    fig = plt.figure()
+    ax = fig.gca()
+    ax.ticklabel_format(useOffset=False, style='plain')
+
+    for y,ch_name in zip(Y, y_axis):
+        ax.plot(X, y, linewidth=0.8, label=labels[ch_name])
+
+    ax.legend()
+
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+
+    if save_path:
+        fig.savefig(save_path, bbox_inches="tight")
+
+    if show:
+        plt.show()
+    
+    return fig
 
 if __name__ == '__main__':
-    pass
     # result = acquire_signal(get_scope_id_ethernet("10.0.0.10"), ['CH1', 'CH2'])
     # save_acquisition(result)
-    # for path in ('output/scope_2026040618h36m31s.csv', 'output/scope_2026040618h36m31s.npz'):
-    #     result = load_signal(path)
-    #     print(f'\n\n{path}\n\n')
-    #     print(type(result))
-    #     for k in result:
-    #         print(f"{k}, {result[k][:10]}")
+    for path in ('out/scope_2026040618h36m31s.csv', 'out/scope_2026040618h36m31s.npz'):
+        result = load_signal(path)
+        plot_signal(result, labels={'CH1':'channel 1'})
