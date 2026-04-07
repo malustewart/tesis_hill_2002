@@ -278,36 +278,79 @@ def save_signal(
 # ============================================================
 
 def plot_signal(
-    signal: np.ndarray,
+    signal: Dict[str,np.ndarray],
     y_axis: List[str] | None = None,
     x_axis: str = 't',
     show: bool = True,
     save_path: str | None = None,
-    labels: Dict[str] = {},
+    labels: Dict[str, np.ndarray] = {},
     xmin: float = 0, 
     xmax: float = np.inf,
     xlabel: str = 't[s]',
     ylabel: str = 'V[V]',
 ):
+    """
+    Plot one or more channels from a signal dictionary.
+
+    Parameters
+    ----------
+    signal : Dict[str, np.ndarray]
+        Dictionary containing the signal data. Must include a field
+        corresponding to `x_axis` (default: 't') and one or more fields for the
+        y-axis channels.
+    y_axis : List[str] | None, optional
+        List of field names to plot on the y-axis. If None, all fields except
+        't' are plotted.
+    x_axis : str, optional
+        Field name to use as the x-axis. Default is 't'.
+    show : bool, optional
+        Whether to display the plot using `plt.show()`. Default is True.
+    save_path : str | None, optional
+        If provided, the figure is saved to this path.
+    labels : Dict[str], optional
+        Mapping from channel names to display labels. Missing entries default
+        to the channel name.
+    xmin : float, optional
+        Minimum x value for filtering the data. Default is 0.
+    xmax : float, optional
+        Maximum x value for filtering the data. Default is np.inf.
+    xlabel : str, optional
+        Label for the x-axis. Default is 't[s]'.
+    ylabel : str, optional
+        Label for the y-axis. Default is 'V[V]'.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        The generated matplotlib figure.
+
+    Notes
+    -----
+    - The function filters the signal data to the range [xmin, xmax].
+    """
     X = signal[x_axis]
 
     mask = (X >= xmin) & (X <= xmax)
+    
+    X = X[mask]
     signal_masked = {k: signal[k][mask] for k in signal}
 
     if not y_axis:
-        y_axis = [k for k in signal_masked if k != 't']
+        y_axis = [k for k in signal_masked if k != x_axis]
 
     Y = [signal_masked[ch_name] for ch_name in y_axis]
 
+    labels_ = labels.copy()
+
     for ch_name in y_axis:
-        labels.setdefault(ch_name, ch_name)
+        labels_.setdefault(ch_name, ch_name)
 
     fig = plt.figure()
     ax = fig.gca()
     ax.ticklabel_format(useOffset=False, style='plain')
 
     for y,ch_name in zip(Y, y_axis):
-        ax.plot(X, y, linewidth=0.8, label=labels[ch_name])
+        ax.plot(X, y, linewidth=0.8, label=labels_[ch_name])
 
     ax.legend()
 
@@ -322,9 +365,10 @@ def plot_signal(
     
     return fig
 
+
 if __name__ == '__main__':
     # result = acquire_signal(get_scope_id_ethernet("10.0.0.10"), ['CH1', 'CH2'])
     # save_acquisition(result)
     for path in ('out/scope_2026040618h36m31s.csv', 'out/scope_2026040618h36m31s.npz'):
         result = load_signal(path)
-        plot_signal(result, labels={'CH1':'channel 1'})
+        plot_signal(result, labels={'CH1':'channel 1'}, xmax=0.0005)
