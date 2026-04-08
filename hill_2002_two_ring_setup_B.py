@@ -304,6 +304,13 @@ def single_run(
     print("Acquiring spectrum...")
     meas = osa.acquire_spectrum(ip=osa_endpoint[0], port=osa_endpoint[1])
     #meas = osa.load_spectrum("dummy_spectrum.csv")  #debug only
+    
+    tap_3_loss_dB = setup_description.tap_3_loss_dB
+    if tap_3_loss_dB < 0:
+        tap_3_loss_dB = -tap_3_loss_dB
+    
+    meas["power_dB"] = meas["power_dB"] + tap_3_loss_dB #compensate tap loss
+
     print("Spectrum acquisition done!")
 
     ext_laser_lambda_range = [
@@ -343,15 +350,17 @@ def single_run(
     meas_scope = scope.acquire_signal(scope.get_scope_id_ethernet("10.0.0.10"), ['CH1', 'CH2', 'CH3']) # TODO:receive ip from config or cmd line
     print("Scope capture acquisition done!")
 
-    def get_optical_power(measurement: np.ndarray, PD_resp: float, zin: float = 50):
+    def get_optical_power(measurement: np.ndarray, PD_resp: float, tap_loss_dB: float, zin: float = 50):
         v_avg = np.average(measurement)
         i = v_avg / zin
-        power = i / PD_resp
+        if tap_loss_dB < 0:
+            tap_loss_dB = -tap_loss_dB
+        power = 10 * np.log10(i / PD_resp) + tap_loss_dB
         return power
 
-    ext_laser_power_from_scope = get_optical_power(meas_scope['CH1'], setup_description.PD_0_resp)
-    ring_laser_1_power_from_scope = get_optical_power(meas_scope['CH2'], setup_description.PD_1_resp)
-    ring_laser_2_power_from_scope = get_optical_power(meas_scope['CH3'], setup_description.PD_2_resp)
+    ext_laser_power_from_scope = get_optical_power(meas_scope['CH1'], setup_description.PD_0_resp, setup_description.tap_0_loss_dB)
+    ring_laser_1_power_from_scope = get_optical_power(meas_scope['CH2'], setup_description.PD_1_resp, setup_description.tap_1_loss_dB)
+    ring_laser_2_power_from_scope = get_optical_power(meas_scope['CH3'], setup_description.PD_2_resp, setup_description.tap_2_loss_dB)
 
     results = SingleRunResults(
         run_params, 
