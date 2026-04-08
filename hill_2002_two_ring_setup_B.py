@@ -9,6 +9,8 @@ from pathlib import Path
 import argparse
 import csv
 from datetime import datetime
+from scope import scope
+from typing import Dict
 
 @dataclass(frozen=True)
 class SetupDescription:
@@ -24,6 +26,8 @@ class SetupDescription:
     tap_0 : str = "SN:XXXX-PN:XXXX"
     tap_0_loss_dB : float = np.nan
     PM_0 : str = "SN:XXXX-PN:XXXX"
+    PD_0: str = "SN:XXXX-PN:XXXX"
+    PD_0_resp: float = 1.0  # A/W
     coupler_1: str = "SN:XXXX-PN:XXXX"
     coupler_1_T_dB: float = np.nan
 
@@ -45,6 +49,7 @@ class SetupDescription:
     tap_2: str = "SN:XXXX-PN:XXXX"
     tap_2_loss_dB: float = np.nan
     PD_2: str = "SN:XXXX-PN:XXXX"
+    PD_2_resp: float = 1.0  # A/W
 
     tap_3: str = "SN:XXXX-PN:XXXX"
     tap_3_loss_dB: float = np.nan
@@ -335,19 +340,18 @@ def single_run(
 
     # Scope
     print("Acquiring scope capture...")
-    meas_scope = None   #todo: read scope
-
+    meas_scope = scope.acquire_signal(scope.get_scope_id_ethernet("10.0.0.10"), ['CH1', 'CH2', 'CH3']) # TODO:receive ip from config or cmd line
     print("Scope capture acquisition done!")
 
-    # TODO: repeat for the 3 channels
-    v_avg = 4   # TODO: get average channel V from scope measurement
-    zin = 50
-    i = v_avg / zin
-    pow = i / setup_description.PD_1_resp
+    def get_optical_power(measurement: np.ndarray, PD_resp: float, zin: float = 50):
+        v_avg = np.average(measurement)
+        i = v_avg / zin
+        power = i / PD_resp
+        return power
 
-    ring_laser_1_power_from_scope = -np.inf
-    ring_laser_2_power_from_scope = -np.inf
-    ext_laser_power_from_scope = -np.inf
+    ext_laser_power_from_scope = get_optical_power(meas_scope['CH1'], setup_description.PD_0_resp)
+    ring_laser_1_power_from_scope = get_optical_power(meas_scope['CH2'], setup_description.PD_1_resp)
+    ring_laser_2_power_from_scope = get_optical_power(meas_scope['CH3'], setup_description.PD_2_resp)
 
     results = SingleRunResults(
         run_params, 
