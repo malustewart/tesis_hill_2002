@@ -96,7 +96,7 @@ def acquire_signal(
             scope.write(f'DATA:SOURCE {channel}')
             scope.write('CURVE?')
             measurement = scope.read_raw()
-            measurement = np.frombuffer(measurement, dtype="<i2").astype(np.float32)
+            measurement = np.frombuffer(measurement, dtype="<u2").astype(np.float32)
             measurement = (measurement - yoff) * ymult + yzero
             result[channel] = measurement[4:]   # TODO: fix limits
 
