@@ -67,6 +67,7 @@ def acquire_signal(
         REF4 (optional)
     """
     try:
+        print(scope_id)
         channels = parse_channels(channels)
         n_points = 10000
         # Inicializar el administrador de recursos
@@ -83,10 +84,6 @@ def acquire_signal(
         scope.write(f'DATA:ENC RPB; WIDTH 2; STARt 1; STOP {n_points}')
         scope.write(f'HORizontal:RECOrdlength {n_points}')
 
-        ymult = float(scope.query('WFMPRE:YMULT?'))
-        yzero = float(scope.query('WFMPRE:YZERO?'))
-        yoff = float(scope.query('WFMPRE:YOFF?'))
-        xincr = float(scope.query('WFMPRE:XINCR?'))
         # t = np.arange()
 
         result = {}
@@ -94,6 +91,10 @@ def acquire_signal(
         # TODO: wait for triggering
         for channel in channels:
             scope.write(f'DATA:SOURCE {channel}')
+            ymult = float(scope.query('WFMPRE:YMULT?'))
+            yzero = float(scope.query('WFMPRE:YZERO?'))
+            yoff = float(scope.query('WFMPRE:YOFF?'))
+            xincr = float(scope.query('WFMPRE:XINCR?'))
             scope.write('CURVE?')
             measurement = scope.read_raw()
             measurement = np.frombuffer(measurement, dtype="<u2").astype(np.float32)
@@ -104,7 +105,6 @@ def acquire_signal(
 
         result['t'] = np.arange(n_points_read) * xincr
 
-        input("press enter to restore") # TODO: borrar
         # TODO: NO SE HACE RESTORE SI ESTABA EN MODO RUN
         scope.write(f'ACQuire:MODe {prev_acq_mode}; ACQuire:STATE {prev_acq_state}; ACQuire:STOPAfter {prev_acq_stopafter}; TRIGger:A:MODe {prev_trigger_mode}')
 
@@ -367,8 +367,12 @@ def plot_signal(
 
 
 if __name__ == '__main__':
-    # result = acquire_signal(get_scope_id_ethernet("10.0.0.10"), ['CH1', 'CH2'])
-    # save_acquisition(result)
-    for path in ('out/scope_2026040618h36m31s.csv', 'out/scope_2026040618h36m31s.npz'):
-        result = load_signal(path)
-        plot_signal(result, labels={'CH1':'channel 1'}, xmax=0.0005)
+    result = acquire_signal(get_scope_id_ethernet("10.0.0.10"), ['CH1', 'CH2'])
+    save_signal(result, name="soa_I_60mA")
+    plot_signal(result)
+    # for path in ('out/scope_2026040618h36m31s.csv', 'out/scope_2026040618h36m31s.npz'):
+    #     result = load_signal(path)
+    #     plot_signal(result, labels={'CH1':'channel 1'}, xmax=0.0005)
+
+
+
