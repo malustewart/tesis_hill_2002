@@ -39,7 +39,8 @@ def plot_run_results(
         ext_laser_power_mW_in_ring: list,
         ext_laser_power_mW: list,
         tap_1_att_dB: float,
-        params: dict[str]
+        params: dict[str],
+        rundir: Path
     ):
 
     tap_1_att = np.pow(10, tap_1_att_dB/10)
@@ -67,8 +68,11 @@ def plot_run_results(
     plt.title(conditions, fontsize=8)
     plt.savefig(rundir / "ext_laser_in_ring_vs_ext_laser_power.svg")
 
+    estimated_ext_laser_ASE = ext_laser_power_mW_in_ring[0]/tap_1_att
+    estimated_gain = (ext_laser_power_mW_in_ring[1:]/tap_1_att - estimated_ext_laser_ASE)/ext_laser_power_mW[1:]
+
     plt.figure()
-    plt.plot(ext_laser_power_mW[1:], ext_laser_power_mW_in_ring[1:]/tap_1_att/ext_laser_power_mW[1:])
+    plt.plot(ext_laser_power_mW[1:], estimated_gain)
     plt.xlabel("External laser power (mW)")
     plt.ylabel("SOA gain")
     plt.ylim(bottom=0)
@@ -78,8 +82,9 @@ def plot_run_results(
     plt.title(conditions, fontsize=8)
     plt.savefig(rundir / "soa_gain.svg")
 
+
     plt.figure()
-    plt.plot(ext_laser_power_mW_in_ring[1:]/tap_1_att + ring_laser_power_mW[1:]/tap_1_att, ext_laser_power_mW_in_ring[1:]/tap_1_att/ext_laser_power_mW[1:])
+    plt.plot(ext_laser_power_mW_in_ring[1:]/tap_1_att + ring_laser_power_mW[1:]/tap_1_att, estimated_gain)
     plt.xlabel("Total power at SOA output (mW)")
     plt.ylabel("SOA gain")
     plt.ylim(bottom=0)
@@ -117,4 +122,4 @@ if __name__ == "__main__":
 
     for rundir in root.iterdir():
         ring_laser_power_mW, ext_laser_power_mW_in_ring, ext_laser_power_mW, configs = get_run_results(rundir, laser)
-        plot_run_results(ring_laser_power_mW, ext_laser_power_mW_in_ring, ext_laser_power_mW, -19.91, configs)    # tap 1 attenuation is hardcoded, improve
+        plot_run_results(ring_laser_power_mW, ext_laser_power_mW_in_ring, ext_laser_power_mW, -19.91, configs, rundir)    # tap 1 attenuation is hardcoded, improve

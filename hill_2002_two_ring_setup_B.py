@@ -486,7 +486,7 @@ def main():
     experiment_results = complete_run(setup_description, setup_config, experiment_params, osa_endpoint)
     
     timestamp = datetime.now().strftime("%Y%m%d%Hh%Mm%Ss")
-    outputdir = Path("out/single_ring_laser/" + timestamp)
+    outputdir = Path("out/two_ring_laser/" + timestamp)
     save_result(setup_description, setup_config, experiment_params, experiment_results, outputdir)
     log_to_mlflow(outputdir, setup_description, setup_config, experiment_params, experiment_results)
 
