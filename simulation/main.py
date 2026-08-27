@@ -2,7 +2,7 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 
-T1_in = 1
+T1_in = 0.3
 T2_in = 1
 
 T1_out = 1
@@ -18,10 +18,10 @@ T12 = T1_out * Tac_12 * T2_in
 T21 = T2_out * Tac_21 * T1_in
 T22 = T2_out * Tac_22 * T2_in
 
-G01 = 1000
+G01 = 1000 # ganancia de pequeña señal del SOA, dependiente del bombeo
 Psat1 = 32  # mW  # flujo de saturacion del SOA, dependiente del bombeo
 
-G02 = 600
+G02 = 600 # ganancia de pequeña señal del SOA, dependiente del bombeo
 Psat2 = 15  # mW # flujo de saturacion del SOA, dependiente del bombeo
 
 P1 = []
@@ -69,8 +69,9 @@ for _ in range(10):
     p2 = calc_P2(T12*p1)
 
 for pe1, pe2 in zip(Pe1, Pe2):
-    p2 = calc_P2(pe2+T12*p1)
-    p1 = calc_P1(pe1+T21*p2)
+    for _ in range(100):
+        p2 = calc_P2(pe2+T12*p1)
+        p1 = calc_P1(pe1+T21*p2)
     P1.append(p1)
     P2.append(p2)
 
