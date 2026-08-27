@@ -99,7 +99,7 @@ def acquire_signal(
             measurement = scope.read_raw()
             measurement = np.frombuffer(measurement, dtype="<u2").astype(np.float32)
             measurement = (measurement - yoff) * ymult + yzero
-            result[channel] = measurement[4:]   # TODO: fix limits
+            result[channel] = measurement[4:-1]   # TODO: fix limits
 
         n_points_read = len(result[channels[0]])
 
@@ -231,6 +231,8 @@ def load_signal(filepath: str | Path) -> dict[str, np.ndarray]:
 # Saving
 # ============================================================
 
+# TODO: 
+# deberia tener una opcion explicita que no te ponga timestamp
 def save_signal(
     data: Dict[str, np.ndarray],
     name: str = "scope",
