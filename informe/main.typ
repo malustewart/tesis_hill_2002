@@ -3,6 +3,16 @@
 #import "@preview/dashy-todo:0.1.3": todo
 #import "@preview/subpar:0.2.2"
 
+#show link: it => {
+  underline(text(fill:blue, font:"Consolas",it))
+}
+#show link: emph
+#show link: set text(blue)
+// #show link: {
+//   underline
+//   set text(blue)
+// }
+
 #let todo-inline = todo.with(position:"inline")
 #let missing-fig = rect.with(fill: tiling(" missing figure "), width: 100%, height: 3in, stroke: stroke(paint: red, thickness: 7pt))
 
@@ -122,7 +132,7 @@ La posición del acoplador variable permite introducir pérdidas a la entrada de
 
 === Experimentos B y C
 
-Para los casos B y C ($I_"SOA" = 50$mA), la potencia del láser de anillo decae linealmente mientras se aumenta la potencia de salida del láser externo (@fig:power_soa_I_50_coupler_30 y @fig:power_soa_I_50_coupler_25). Esto es debido al efecto no lineal de XGM. Según lo postulado por #todo([citar a Hill]), la pendiente con la disminuye la potencia es igual a $-1/T$, siendo $T$ la transmitancia desde la salida del SOA hasta su entrada. 
+Para los casos B y C ($I_"SOA" = 50$mA), la potencia del láser de anillo decae linealmente mientras se aumenta la potencia de salida del láser externo (@fig:power_soa_I_50_coupler_30 y @fig:power_soa_I_50_coupler_25). Esto es debido al efecto no lineal de XGM. Según lo postulado en @Hill_Frietman_de_Waardt_Khoe_Dorren_2002, la pendiente con la disminuye la potencia es igual a $-1/T$, siendo $T$ la transmitancia desde la salida del SOA hasta su entrada. 
 En consecuencia, al bajar $T$ introduciendo pérdidas en el lazo la pendiente debería disminuir. 
 
 #figure(
@@ -178,6 +188,7 @@ Sin embargo, la relación no es constante entre los experimentos B y C (@tab:T_o
 
 === Experimento A
 
+A diferencia de los experiments B y C, en el experimento A no se oberva que la potencia del láser de anillo decaiga linealmente al aumentar la potencia del láser externo (@fig:power_soa_I_100_coupler_30).
 
 #todo-inline[Exper A no se ve XGM pero sí se ve que cambia la pendiente de Plaser ext despues del soa en funcion de antes del SOA]
 
@@ -199,9 +210,18 @@ Sin embargo, la relación no es constante entre los experimentos B y C (@tab:T_o
   [Hacer una medición directa de la potencia de salida del láser externo con un tap y no agregar atenuación antes de llegar a la entrada del SOA.],
   [$T$ depende fuertemente de la atenuación del acoplador, que cuando fue calibrado se observó que era difícil de controlar debido a que presentaba histéresis y un drift temporal considerable.#footnote([Por ejemplo, con el acoplador configurado en posición 10, la transmitancia de la salida TP subió de -46.50 dB a -26.15 dB en 15 minutos de funcionamiento continuo.])],[Utilizar un atenuador variable con menos histéresis y drift temporal o en su defecto atenuadores constantes que se puedan cambiar de acuerdo a la prueba que se quiera realizar.],
   [Para hacer barrido en un rango de potencias de salida de láser externo, primero hay que estimar qué corriente de láser corresponde a cada potencia del rango.],[ Mantener el láser en condiciones de operación fijas (corriente y temperatura) y modular su potencia con un modulador externo.],
+  [ La ganancia del SOA fue calculada como:
+  $
+    G = (P_"out"_"láser ext" - P_"ASE")/ P_"in"_"láser ext"
+  $
+  para la banda correspondiente al láser externo, pero $P_"ASE"$ no fue medida así que tuvo que ser estimada como $P_"out"$ en la menor $P_"in"$ del barrido],
+  [Realizar una medición de $P_"ASE"$: con $P_"in"=0$:
+  $
+    P_"ASE" = lr(P_"out" | , size:#200%)_(P_"in"=0)
+  $ 
+  ]
 )
 
-#todo-inline([Efecto de ignorar el control de polarización])
 
 
 = Dos anillos interconectados con láser externo
@@ -224,6 +244,9 @@ Sin embargo, la relación no es constante entre los experimentos B y C (@tab:T_o
 )<fig:two_rings_setup_C>
 
 
+#todo-inline([Efecto de ignorar el control de polarización])
+
+
 = Anexo
 
 == Único anillo con láser externo
@@ -244,6 +267,8 @@ Sin embargo, la relación no es constante entre los experimentos B y C (@tab:T_o
 === Conversión entre corriente y potencia del laser externo
 #todo-inline([toda esta seccion, modelo utilizado para aproximar la curva (no tiene en cuenta el codo, asume que es lineal)])
 
-=== Script de automación
-#todo-inline([Link a git])
+=== Scripts de automación
 
+https://github.com/malustewart/tesis_hill_2002
+
+#bibliography("refs.bib")
