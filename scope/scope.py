@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from typing import Dict, Union, List
 from pathlib import Path
 from datetime import datetime
+import time
 
 VALID_CHANNELS = {
     "CH1", "CH2", "CH3", "CH4",
@@ -67,7 +68,6 @@ def acquire_signal(
         REF4 (optional)
     """
     try:
-        print(scope_id)
         channels = parse_channels(channels)
         n_points = 10000
         # Inicializar el administrador de recursos
@@ -89,6 +89,8 @@ def acquire_signal(
         result = {}
 
         # TODO: wait for triggering
+        time.sleep(1)
+        
         for channel in channels:
             scope.write(f'DATA:SOURCE {channel}')
             ymult = float(scope.query('WFMPRE:YMULT?'))
@@ -153,9 +155,9 @@ def acquire_signal(
         return result
         
     except Exception as e:
-        print(f"Error en la adquisición: {str(e)}")
-        return None, None
-    
+        # print(f"Error en la adquisición: {str(e)}")
+        raise
+
 
 def load_signal(filepath: str | Path) -> dict[str, np.ndarray]:
     """
@@ -290,7 +292,7 @@ def plot_signal(
     xmax: float = np.inf,
     xlabel: str = 't[s]',
     ylabel: str = 'V[V]',
-):
+) -> plt.Figure:
     """
     Plot one or more channels from a signal dictionary.
 
