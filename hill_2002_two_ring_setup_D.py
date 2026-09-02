@@ -375,10 +375,6 @@ def single_run(
         T = -273.15
         print(f"Couldn't parse temperature. Recording default value T={T:.2f}")
 
-    print("CH1", scope_raw["CH1"][:10])
-    print("CH2", scope_raw["CH2"][:10])
-    print("CH3", scope_raw["CH3"][:10])
-
     scope_processed = copy.deepcopy(scope_raw) 
 
     def compensate_arrival_time_diff(
@@ -426,9 +422,9 @@ def single_run(
         # optical powers arriving at PD (dBm)
 
         ## avoid division by zero
-        meas_power_ch1 = np.abs(meas_power_ch1) + 1e-20
-        meas_power_ch2 = np.abs(meas_power_ch2) + 1e-20
-        meas_power_ch3 = np.abs(meas_power_ch3) + 1e-20
+        meas_power_ch1 = np.abs(meas_power_ch1) + 1e-30
+        meas_power_ch2 = np.abs(meas_power_ch2) + 1e-30
+        meas_power_ch3 = np.abs(meas_power_ch3) + 1e-30
 
         ## calc dBm
         meas_power_ch1_dBm = 10 * np.log10(meas_power_ch1)
@@ -457,9 +453,9 @@ def single_run(
         )
 
         # real optical powers (mW)
-        real_power_ext_laser = np.pow(real_power_ext_laser_dBm / 10, 10)
-        real_power_ring_laser_1 = np.pow(real_power_ring_laser_1_dBm / 10, 10)
-        real_power_ring_laser_2 = np.pow(real_power_ring_laser_2_dBm / 10, 10)
+        real_power_ext_laser = np.pow(10, real_power_ext_laser_dBm / 10)
+        real_power_ring_laser_1 = np.pow(10, real_power_ring_laser_1_dBm / 10)
+        real_power_ring_laser_2 = np.pow(10, real_power_ring_laser_2_dBm / 10)
 
         scope_measurement["ext_laser_mW"] = real_power_ext_laser
         scope_measurement["ring_laser_1_mW"] = real_power_ring_laser_1
