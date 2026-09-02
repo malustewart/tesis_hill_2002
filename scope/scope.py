@@ -1,6 +1,7 @@
 import pyvisa
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.ticker import ScalarFormatter
 from typing import Dict, Union, List
 from pathlib import Path
 from datetime import datetime
@@ -285,6 +286,7 @@ def plot_signal(
     signal: Dict[str,np.ndarray],
     y_axis: List[str] | None = None,
     x_axis: str = 't',
+    x_axis_exponent = None,
     show: bool = True,
     save_path: str | None = None,
     labels: Dict[str, np.ndarray] = {},
@@ -292,6 +294,8 @@ def plot_signal(
     xmax: float = np.inf,
     xlabel: str = 't[s]',
     ylabel: str = 'V[V]',
+    grid : bool = True,
+    grid_minor : bool = True,
 ) -> plt.Figure:
     """
     Plot one or more channels from a signal dictionary.
@@ -322,6 +326,8 @@ def plot_signal(
         Label for the x-axis. Default is 't[s]'.
     ylabel : str, optional
         Label for the y-axis. Default is 'V[V]'.
+    x_axis_exponent :int, optional
+        Exponent to use for the x_axis
 
     Returns
     -------
@@ -351,7 +357,19 @@ def plot_signal(
 
     fig = plt.figure()
     ax = fig.gca()
-    ax.ticklabel_format(useOffset=False, style='plain')
+
+    xfmt = ScalarFormatter(useMathText=True) # useMathText renders as "x10^n" instead of "1e_n"
+
+    if not x_axis_exponent:
+        x_axis_exponent = 3 * int(np.floor(np.log10(np.ptp(X)) / 3))
+
+    if x_axis_exponent != 0:
+        xfmt.set_powerlimits((x_axis_exponent, x_axis_exponent))
+    else:
+        xfmt.set_scientific(False)
+
+    # Instantiate the formatter
+    ax.xaxis.set_major_formatter(xfmt)
 
     for y,ch_name in zip(Y, y_axis):
         ax.plot(X, y, linewidth=0.8, label=labels_[ch_name])
@@ -360,6 +378,15 @@ def plot_signal(
 
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
+
+    ax.tick_params(which="major", length=6, width=1)
+    ax.tick_params(which="minor", length=3, width=0.7)
+
+    if grid_minor:
+        ax.minorticks_on()
+        ax.grid(True, "both", alpha=0.3)
+    if grid:
+        ax.grid(True, "major", alpha=1.0)
 
     if save_path:
         fig.savefig(save_path, bbox_inches="tight")
