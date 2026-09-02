@@ -385,24 +385,26 @@ def single_run(
         CH1 = scope_measurement['CH1']
         CH2 = scope_measurement['CH2']
         CH3 = scope_measurement['CH3']
-        meas_arrival_time_diff_scope_ch1_to_ch3_ns = setup_description.meas_arrival_time_diff_scope_ch1_to_ch2_ns * 1e-9 + setup_description.meas_arrival_time_diff_scope_ch2_to_ch3_ns * 1e-9
+        meas_arrival_time_diff_scope_ch1_to_ch2_ns = setup_description.meas_arrival_time_diff_scope_ch1_to_ch2_ns
+        meas_arrival_time_diff_scope_ch1_to_ch3_ns = setup_description.meas_arrival_time_diff_scope_ch1_to_ch2_ns + meas_arrival_time_diff_scope_ch1_to_ch2_ns
 
-        time_step = (t[-1] - t[0]) / (len(t) - 1)
+        time_step_ns = (t[-1] - t[0]) / (len(t) - 1) * 1e9
 
-        arrival_time_diff_scope_ch1_to_ch2_in_samples = round(setup_description.meas_arrival_time_diff_scope_ch1_to_ch2_ns * 1e-9 / time_step)
-        arrival_time_diff_scope_ch1_to_ch3_in_samples = round(meas_arrival_time_diff_scope_ch1_to_ch3_ns / time_step)
+        arrival_time_diff_scope_ch1_to_ch2_in_samples = round(meas_arrival_time_diff_scope_ch1_to_ch2_ns / time_step_ns)
+        arrival_time_diff_scope_ch1_to_ch3_in_samples = round(meas_arrival_time_diff_scope_ch1_to_ch3_ns / time_step_ns)
 
-        CH2 = np.roll(CH1, -arrival_time_diff_scope_ch1_to_ch2_in_samples)
-        CH3 = np.roll(CH1, -arrival_time_diff_scope_ch1_to_ch3_in_samples)
+        CH2 = np.roll(CH2, -arrival_time_diff_scope_ch1_to_ch2_in_samples)
+        CH3 = np.roll(CH3, -arrival_time_diff_scope_ch1_to_ch3_in_samples)
 
         new_length = t.size - arrival_time_diff_scope_ch1_to_ch3_in_samples
 
-        t.resize(new_length)
-        CH1.resize(new_length)
-        CH2.resize(new_length)
-        CH3.resize(new_length)
+        scope_measurement["t"] = t[:new_length]
+        scope_measurement["CH1"] = CH1[:new_length]
+        scope_measurement["CH2"] = CH2[:new_length]
+        scope_measurement["CH3"] = CH3[:new_length]
 
         return scope_measurement
+
 
     def convert_measured_V_to_optical_power(
         scope_measurement : dict,
