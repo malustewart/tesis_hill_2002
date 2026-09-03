@@ -109,9 +109,14 @@ class SingleRunParams:
 class SingleRunResults:
     run_params: SingleRunParams
     scope_raw_fig : Figure
-    scope_processed_fig : Figure
+    scope_processed_fig_vs_t : Figure
+    scope_processed_fig_vs_ext_laser_power : Figure
+    scope_processed_no_arrival_time_compensation_fig_vs_t : Figure
+    scope_processed_no_arrival_time_compensation_fig_vs_ext_laser_power : Figure
     scope_raw : dict[str, np.ndarray]
     scope_processed: dict[str, np.ndarray]
+    scope_processed_no_arrival_time_compensation: dict[str, np.ndarray]
+    #TODO: agregar captura de OSa con promediado    # limitacion: no puedo hacer la captura automatica porque solo tengo una salida ethernet en la compu que estoy usando para el scope
     T : float   # temperature #TODO: poner en otro lado, aca queda medio colgado
     T_1_in_dB: float = None
     T_2_in_dB: float = None
@@ -375,7 +380,6 @@ def single_run(
         T = -273.15
         print(f"Couldn't parse temperature. Recording default value T={T:.2f}")
 
-    scope_processed = copy.deepcopy(scope_raw) 
 
     def compensate_arrival_time_diff(
             scope_measurement : dict,
@@ -438,7 +442,7 @@ def single_run(
             meas_power_ch1_dBm
             + setup_description.tap_0_loss_in_to_out_meas_dB
             - setup_description.tap_0_loss_in_to_out_pass_dB
-            - setup_description.coupler_1_T_from_ext_laser_dB
+            + setup_description.coupler_1_T_from_ext_laser_dB
             - setup_description.tap_1_loss_in_to_out_pass_dB
         )
 
@@ -469,19 +473,61 @@ def single_run(
 
         return scope_measurement
 
+    # Raw capture
+    scope_raw_fig = scope.plot_signal(scope_raw, show=False)
+
+    # Processed capture with arrival time compensation
+    scope_processed = copy.deepcopy(scope_raw) 
     compensate_arrival_time_diff(scope_processed, setup_description)
     convert_measured_V_to_optical_power(scope_processed, setup_description)
 
-    scope_raw_fig = scope.plot_signal(scope_raw, show=False)
-    scope_processed_fig = scope.plot_signal(scope_processed, show=False)
+    scope_processed_fig_vs_t = scope.plot_signal(
+        scope_processed, 
+        show=False,
+        labels={"ring_laser_1_mW": "Ring laser 1", "ring_laser_2_mW": "Ring laser 2", "ext_laser_power": "Ext. laser power"},
+        ylabel="Power [mW]"
+    )
+    scope_processed_fig_vs_ext_laser_power = scope.plot_signal(
+        scope_processed, 
+        show=False, 
+        x_axis="ext_laser_mW", 
+        y_axis = ["ring_laser_1_mW", "ring_laser_2_mW"], 
+        xlabel="Ext. laser power [mW]",
+        ylabel="Ring laser power [mW]", 
+        labels={"ring_laser_1_mW": "Ring laser 1", "ring_laser_2_mW": "Ring laser 2"},
+    )
+
+    # Processed capture with no arrival time compensation
+    scope_processed_no_arrival_time_compensation = copy.deepcopy(scope_raw) 
+    convert_measured_V_to_optical_power(scope_processed_no_arrival_time_compensation, setup_description)
+
+    scope_processed_no_arrival_time_compensation_fig_vs_t = scope.plot_signal(
+        scope_processed_no_arrival_time_compensation, 
+        show=False,
+        labels={"ring_laser_1_mW": "Ring laser 1", "ring_laser_2_mW": "Ring laser 2", "ext_laser_power": "Ext. laser power"},
+        ylabel="Power [mW]"
+    )
+    scope_processed_no_arrival_time_compensation_fig_vs_ext_laser_power = scope.plot_signal(
+        scope_processed_no_arrival_time_compensation, 
+        show=False, 
+        x_axis="ext_laser_mW", 
+        y_axis = ["ring_laser_1_mW", "ring_laser_2_mW"], 
+        xlabel="Ext. laser power [mW]",
+        ylabel="Ring laser power [mW]", 
+        labels={"ring_laser_1_mW": "Ring laser 1", "ring_laser_2_mW": "Ring laser 2"},
+    )
 
     results = SingleRunResults(
         run_params=run_params, 
         T=T,
         scope_raw_fig=scope_raw_fig,
-        scope_processed_fig=scope_processed_fig,
+        scope_processed_fig_vs_t = scope_processed_fig_vs_t,
+        scope_processed_fig_vs_ext_laser_power = scope_processed_fig_vs_ext_laser_power,
+        scope_processed_no_arrival_time_compensation_fig_vs_t = scope_processed_no_arrival_time_compensation_fig_vs_t,
+        scope_processed_no_arrival_time_compensation_fig_vs_ext_laser_power = scope_processed_no_arrival_time_compensation_fig_vs_ext_laser_power,
         scope_raw=scope_raw,
         scope_processed=scope_processed,
+        scope_processed_no_arrival_time_compensation=scope_processed_no_arrival_time_compensation,
     )
     return results
 
