@@ -87,7 +87,7 @@ class SetupConfig:
     ext_laser_modulator_v_min: float
     ext_laser_modulator_v_max: float
     ext_laser_amplifier_setpoint : str = "First amplifier: 129 mA - Second amplifier: 66 mA"
-    attenuator_setup_instruction :str = "Configure attenuators to have a transition as close as possible to a step without histeresis"
+    attenuator_and_PC_setup_instruction :str = "Configure attenuators to have a transition as close as possible to a step without histeresis"
     scope_ip : str = "10.0.0.10"
 
 
@@ -118,10 +118,10 @@ class SingleRunResults:
     scope_processed_no_arrival_time_compensation: dict[str, np.ndarray]
     #TODO: agregar captura de OSa con promediado    # limitacion: no puedo hacer la captura automatica porque solo tengo una salida ethernet en la compu que estoy usando para el scope
     T : float   # temperature #TODO: poner en otro lado, aca queda medio colgado
-    T_1_in_dB: float = None
-    T_2_in_dB: float = None
-    T_1_out_dB: float = None
-    T_2_out_dB: float = None
+    T11_dB: float = None
+    T12_dB: float = None
+    T21_dB: float = None
+    T22_dB: float = None
 
 
 def parse_setup_description_toml(
@@ -443,7 +443,7 @@ def single_run(
             + setup_description.tap_0_loss_in_to_out_meas_dB
             - setup_description.tap_0_loss_in_to_out_pass_dB
             + setup_description.coupler_1_T_from_ext_laser_dB
-            - setup_description.tap_1_loss_in_to_out_pass_dB
+            - setup_description.tap_3_loss_in_to_out_pass_dB
         )
 
         real_power_ring_laser_1_dBm = (
@@ -564,29 +564,15 @@ def complete_run(
     manual_steps.give_instruction(f"Configure external laser modulator controller (AWG) to output a signal between {setup_config.ext_laser_modulator_v_min:.1f} V and  {setup_config.ext_laser_modulator_v_max:.1f} V")
     manual_steps.give_instruction(f"Configure external laser amplifier currents to {setup_config.ext_laser_amplifier_setpoint}")
 
-    manual_steps.give_instruction(setup_config.attenuator_setup_instruction)
+    manual_steps.give_instruction(setup_config.attenuator_and_PC_setup_instruction)
 
-    manual_steps.give_instruction(f"Turn ON SOA 1")
-    manual_steps.give_instruction(f"Configure PC 1 to maximise power in ring laser 1")
-    manual_steps.give_instruction(f"Turn OFF SOA 1")
+    # manual_steps.give_instruction(f"Turn ON SOA 1")
+    # manual_steps.give_instruction(f"Configure PC 1 to maximise power in ring laser 1")
+    # manual_steps.give_instruction(f"Turn OFF SOA 1")
     
-    manual_steps.give_instruction(f"Turn ON SOA 2")
-    manual_steps.give_instruction(f"Configure PC 2 to maximise power in ring laser 2")
-    manual_steps.give_instruction(f"Turn OFF SOA 2")
-
-    def parse_T_db_input(input_str : str) -> float:
-        input_str = input_str.lower().replace("dbm", "").replace("db", "").replace("-","").replace(",", ".").strip()
-        return -1 * float(input_str)
-
-    T_1_in_dB_str = manual_steps.ask_for_input(f"Measure T_1_in and enter its value in dB: ")
-    T_2_in_dB_str = manual_steps.ask_for_input(f"Measure T_2_in and enter its value in dB: ")
-    T_1_out_dB_str = manual_steps.ask_for_input(f"Measure T_1_out and enter its value in dB: ")
-    T_2_out_dB_str = manual_steps.ask_for_input(f"Measure T_2_out and enter its value in dB: ")
-
-    T_1_in_dB = parse_T_db_input(T_1_in_dB_str)
-    T_2_in_dB = parse_T_db_input(T_2_in_dB_str)
-    T_1_out_dB = parse_T_db_input(T_1_out_dB_str)
-    T_2_out_dB = parse_T_db_input(T_2_out_dB_str)
+    # manual_steps.give_instruction(f"Turn ON SOA 2")
+    # manual_steps.give_instruction(f"Configure PC 2 to maximise power in ring laser 2")
+    # manual_steps.give_instruction(f"Turn OFF SOA 2")
 
     manual_steps.give_instruction(f"If OFF, turn ON all lasers")
     manual_steps.give_instruction(f"If OFF, turn ON external laser modulator controller")
@@ -598,15 +584,34 @@ def complete_run(
             for sweep_time in exper_params.sweep_times:
                 single_run_params = SingleRunParams(scope_capture_range, sweep_waveform, sweep_time)
                 result = single_run(setup_description, setup_config, single_run_params)
-                result = replace(
-                    result,
-                    T_1_in_dB=T_1_in_dB,
-                    T_2_in_dB=T_2_in_dB,
-                    T_1_out_dB=T_1_out_dB,
-                    T_2_out_dB=T_2_out_dB,
-                )
                 if result:
                     results.append(result)
+
+    def parse_T_db_input(input_str : str) -> float:
+        input_str = input_str.lower().replace("dbm", "").replace("db", "").replace("-","").replace(",", ".").strip()
+        return -1 * float(input_str)
+
+    T11_dB_str = manual_steps.ask_for_input(f"Measure T11 and enter its value in dB: ")
+    T12_dB_str = manual_steps.ask_for_input(f"Measure T12 and enter its value in dB: ")
+    T21_dB_str = manual_steps.ask_for_input(f"Measure T21 and enter its value in dB: ")
+    T22_dB_str = manual_steps.ask_for_input(f"Measure T22 and enter its value in dB: ")
+
+    T11_dB = parse_T_db_input(T11_dB_str)
+    T12_dB = parse_T_db_input(T12_dB_str)
+    T21_dB = parse_T_db_input(T21_dB_str)
+    T22_dB = parse_T_db_input(T22_dB_str)
+
+    results = [
+        replace(
+            result,
+            T11_dB=T11_dB,
+            T12_dB=T12_dB,
+            T21_dB=T21_dB,
+            T22_dB=T22_dB,
+        )
+        for result in results
+    ]
+
     return results
 
 
@@ -644,7 +649,7 @@ def main():
     experiment_results = complete_run(setup_description, setup_config, experiment_params)
     
     timestamp = datetime.now().strftime("%Y%m%d%Hh%Mm%Ss")
-    outputdir = Path("out/2026_agosto/test/" + timestamp)
+    outputdir = Path("out/2026_agosto/final/" + timestamp)
     save_result(setup_description, setup_config, experiment_params, experiment_results, outputdir)
     # log_to_mlflow(outputdir, setup_description, setup_config, experiment_params, experiment_results)
 
