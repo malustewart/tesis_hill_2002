@@ -1,6 +1,7 @@
 import pyvisa
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.axes import Axes
 from matplotlib.ticker import ScalarFormatter
 from typing import Dict, Union, List
 from pathlib import Path
@@ -289,13 +290,18 @@ def plot_signal(
     x_axis_exponent = None,
     show: bool = True,
     save_path: str | None = None,
-    labels: Dict[str, np.ndarray] = {},
+    labels: Dict[str, str] = {},
     xmin: float = 0, 
     xmax: float = np.inf,
+    ymin: float = None,
+    ymax: float = None,
     xlabel: str = 't[s]',
     ylabel: str = 'V[V]',
     grid : bool = True,
     grid_minor : bool = True,
+    ax : Axes | None = None,
+    scatter : bool = False,
+    **kwargs
 ) -> plt.Figure:
     """
     Plot one or more channels from a signal dictionary.
@@ -315,12 +321,18 @@ def plot_signal(
         Whether to display the plot using `plt.show()`. Default is True.
     save_path : str | None, optional
         If provided, the figure is saved to this path.
-    labels : Dict[str], optional
+    labels : Dict[str, str], optional
         Mapping from channel names to display labels. Missing entries default
         to the channel name.
     xmin : float, optional
         Minimum x value for filtering the data. Default is 0.
     xmax : float, optional
+        Maximum x value for filtering the data. Default is np.inf.
+    ymin : float, optional
+        y-axis lower limit.
+    ymax : float, optional
+        y-axis upper limit.
+    ymax : float, optional
         Maximum x value for filtering the data. Default is np.inf.
     xlabel : str, optional
         Label for the x-axis. Default is 't[s]'.
@@ -328,7 +340,11 @@ def plot_signal(
         Label for the y-axis. Default is 'V[V]'.
     x_axis_exponent :int, optional
         Exponent to use for the x_axis
-
+    ax : Axes, optional
+        Axis to draw plot on. If None, a new figure is created
+    scatter : bool (default False)
+        If True, scatter function is used
+        If False, plot function is used
     Returns
     -------
     matplotlib.figure.Figure
@@ -355,8 +371,9 @@ def plot_signal(
     for ch_name in y_axis:
         labels_.setdefault(ch_name, ch_name)
 
-    fig = plt.figure()
-    ax = fig.gca()
+    if not ax:
+        fig = plt.figure()
+        ax = fig.gca()
 
     xfmt = ScalarFormatter(useMathText=True) # useMathText renders as "x10^n" instead of "1e_n"
 
@@ -372,9 +389,17 @@ def plot_signal(
     ax.xaxis.set_major_formatter(xfmt)
 
     for y,ch_name in zip(Y, y_axis):
-        ax.plot(X, y, linewidth=0.8, label=labels_[ch_name])
-
+        if scatter:
+            ax.scatter(X, y, label=labels_[ch_name], **kwargs)
+        else:
+            ax.plot(X, y, label=labels_[ch_name], **kwargs)
     ax.legend()
+
+    if ymin:
+        ax.set_ylim(bottom=ymin)
+
+    if ymax:
+        ax.set_ylim(top=ymin)
 
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
@@ -389,12 +414,12 @@ def plot_signal(
         ax.grid(True, "major", alpha=1.0)
 
     if save_path:
-        fig.savefig(save_path, bbox_inches="tight")
+        ax.figure.savefig(save_path, bbox_inches="tight")
 
     if show:
         plt.show()
     
-    return fig
+    return ax.figure
 
 
 if __name__ == '__main__':
