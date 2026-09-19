@@ -291,10 +291,12 @@ def plot_signal(
     show: bool = True,
     save_path: str | None = None,
     labels: Dict[str, str] = {},
-    xmin: float = 0, 
-    xmax: float = np.inf,
+    x_range_lower: float = -np.inf, 
+    x_range_upper: float = np.inf,
     ymin: float = None,
     ymax: float = None,
+    xmin: float = None,
+    xmax: float = None,
     xlabel: str = 't[s]',
     ylabel: str = 'V[V]',
     grid : bool = True,
@@ -324,14 +326,18 @@ def plot_signal(
     labels : Dict[str, str], optional
         Mapping from channel names to display labels. Missing entries default
         to the channel name.
-    xmin : float, optional
-        Minimum x value for filtering the data. Default is 0.
-    xmax : float, optional
+    x_range_lower : float, optional
+        Minimum x value for filtering the data. Default is -np.inf.
+    x_range_upper : float, optional
         Maximum x value for filtering the data. Default is np.inf.
     ymin : float, optional
         y-axis lower limit.
     ymax : float, optional
         y-axis upper limit.
+    xmin : float, optional
+        x-axis lower limit.
+    xmax : float, optional
+        x-axis upper limit.
     ymax : float, optional
         Maximum x value for filtering the data. Default is np.inf.
     xlabel : str, optional
@@ -352,11 +358,11 @@ def plot_signal(
 
     Notes
     -----
-    - The function filters the signal data to the range [xmin, xmax].
+    - The function filters the signal data to the range [x_range_lower, x_range_upper].
     """
     X = signal[x_axis]
 
-    mask = (X >= xmin) & (X <= xmax)
+    mask = (X >= x_range_lower) & (X <= x_range_upper)
     
     X = X[mask]
     signal_masked = {k: signal[k][mask] for k in signal}
@@ -395,11 +401,17 @@ def plot_signal(
             ax.plot(X, y, label=labels_[ch_name], **kwargs)
     ax.legend()
 
-    if ymin:
+    if ymin is not None:
         ax.set_ylim(bottom=ymin)
 
-    if ymax:
-        ax.set_ylim(top=ymin)
+    if ymax is not None:
+        ax.set_ylim(top=ymax)
+
+    if xmin is not None:
+        ax.set_xlim(xmin=xmin)
+
+    if xmax is not None:
+        ax.set_xlim(xmax=xmax)
 
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
@@ -414,7 +426,8 @@ def plot_signal(
         ax.grid(True, "major", alpha=1.0)
 
     if save_path:
-        ax.figure.savefig(save_path, bbox_inches="tight")
+        # ax.figure.savefig(save_path, bbox_inches="tight")
+        ax.figure.savefig(save_path)
 
     if show:
         plt.show()
@@ -423,8 +436,8 @@ def plot_signal(
 
 
 if __name__ == '__main__':
-    result = acquire_signal(get_scope_id_ethernet("10.0.0.10"), ['CH1', 'CH2'])
-    save_signal(result, name="soa_I_60mA")
+    result = acquire_signal(get_scope_id_ethernet("10.0.0.10"), ['CH1', 'CH2', "CH3"])
+    save_signal(result, name="step_transition_zoom_supplementary_capture_zoom")
     plot_signal(result)
     # for path in ('out/scope_2026040618h36m31s.csv', 'out/scope_2026040618h36m31s.npz'):
     #     result = load_signal(path)
