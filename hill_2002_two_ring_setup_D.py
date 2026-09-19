@@ -71,6 +71,7 @@ class SetupDescription:
     meas_arrival_time_diff_scope_ch1_to_ch2_ns : float = 0.0
     meas_arrival_time_diff_scope_ch2_to_ch3_ns : float = 0.0
 
+    T1in_dB = -5.4
 
 @dataclass(frozen=True)
 class SetupConfig:
@@ -86,7 +87,7 @@ class SetupConfig:
     ext_laser_T : float
     ext_laser_modulator_v_min: float
     ext_laser_modulator_v_max: float
-    ext_laser_amplifier_setpoint : str = "First amplifier: 129 mA - Second amplifier: 66 mA"
+    ext_laser_amplifier_setpoint : str = "First amplifier: 129 mA - Second amplifier: 166 mA"
     attenuator_and_PC_setup_instruction :str = "Configure attenuators to have a transition as close as possible to a step without histeresis"
     scope_ip : str = "10.0.0.10"
 
@@ -122,6 +123,8 @@ class SingleRunResults:
     T12_dB: float = None
     T21_dB: float = None
     T22_dB: float = None
+    Ptot1_dBm: float = None
+    Ptot2_dBm: float = None
 
 
 def parse_setup_description_toml(
@@ -587,19 +590,24 @@ def complete_run(
                 if result:
                     results.append(result)
 
-    def parse_T_db_input(input_str : str) -> float:
-        input_str = input_str.lower().replace("dbm", "").replace("db", "").replace("-","").replace(",", ".").strip()
-        return -1 * float(input_str)
+    def parse_db_input(input_str : str) -> float:
+        input_str = input_str.lower().replace("dbm", "").replace("db", "") .replace(",", ".").strip()
+        return float(input_str)
+
+    Ptot1_dBm_str = manual_steps.ask_for_input(f"Measure Ptot1 and enter its value in dBm: ")
+    Ptot2_dBm_str = manual_steps.ask_for_input(f"Measure Ptot2 and enter its value in dBm: ")
 
     T11_dB_str = manual_steps.ask_for_input(f"Measure T11 and enter its value in dB: ")
     T12_dB_str = manual_steps.ask_for_input(f"Measure T12 and enter its value in dB: ")
     T21_dB_str = manual_steps.ask_for_input(f"Measure T21 and enter its value in dB: ")
     T22_dB_str = manual_steps.ask_for_input(f"Measure T22 and enter its value in dB: ")
 
-    T11_dB = parse_T_db_input(T11_dB_str)
-    T12_dB = parse_T_db_input(T12_dB_str)
-    T21_dB = parse_T_db_input(T21_dB_str)
-    T22_dB = parse_T_db_input(T22_dB_str)
+    Ptot1_dBm = parse_db_input(Ptot1_dBm_str)
+    Ptot2_dBm = parse_db_input(Ptot2_dBm_str)
+    T11_dB = parse_db_input(T11_dB_str)
+    T12_dB = parse_db_input(T12_dB_str)
+    T21_dB = parse_db_input(T21_dB_str)
+    T22_dB = parse_db_input(T22_dB_str)
 
     results = [
         replace(
@@ -608,6 +616,8 @@ def complete_run(
             T12_dB=T12_dB,
             T21_dB=T21_dB,
             T22_dB=T22_dB,
+            Ptot1_dBm=Ptot1_dBm,
+            Ptot2_dBm=Ptot2_dBm,
         )
         for result in results
     ]
@@ -646,10 +656,12 @@ def main():
     setup_config = parse_setup_config_toml(args.setup_config)
     experiment_params = parse_experiment_params_toml(args.experiment_params)
 
+    full_run_name = manual_steps.ask_for_input("Enter run name:")
     experiment_results = complete_run(setup_description, setup_config, experiment_params)
-    
+
     timestamp = datetime.now().strftime("%Y%m%d%Hh%Mm%Ss")
-    outputdir = Path("out/2026_agosto/final/" + timestamp)
+
+    outputdir = Path(f"out/2026_agosto/final/{timestamp}_{full_run_name}")
     save_result(setup_description, setup_config, experiment_params, experiment_results, outputdir)
     # log_to_mlflow(outputdir, setup_description, setup_config, experiment_params, experiment_results)
 
