@@ -2,11 +2,11 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 
-T1_in = 0.3
-T2_in = 1
+T1_in = 0.25
+T2_in = 0.3
 
-T1_out = 1
-T2_out = 1
+T1_out = 0.3
+T2_out = 0.3
 
 Tac_11 = 0.5
 Tac_12 = 0.5
@@ -18,11 +18,11 @@ T12 = T1_out * Tac_12 * T2_in
 T21 = T2_out * Tac_21 * T1_in
 T22 = T2_out * Tac_22 * T2_in
 
-G01 = 1000 # ganancia de pequeña señal del SOA, dependiente del bombeo
-Psat1 = 32  # mW  # flujo de saturacion del SOA, dependiente del bombeo
+G01 = 268337 # ganancia de pequeña señal del SOA, dependiente del bombeo
+Psat1 = 0.5  # mW  # flujo de saturacion del SOA, dependiente del bombeo
 
-G02 = 600 # ganancia de pequeña señal del SOA, dependiente del bombeo
-Psat2 = 15  # mW # flujo de saturacion del SOA, dependiente del bombeo
+G02 = 117008 # ganancia de pequeña señal del SOA, dependiente del bombeo
+Psat2 = 0.25  # mW # flujo de saturacion del SOA, dependiente del bombeo
 
 P1 = []
 P2 = []
