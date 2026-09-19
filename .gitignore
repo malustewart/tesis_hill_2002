@@ -3,6 +3,7 @@ configs/
 mediciones/
 mlartifacts/
 out/
+temp/
 *.gsheet
 *.db
 dummy_spectrum.csv
