@@ -14,6 +14,11 @@
 // }
 
 #let todo-inline = todo.with(position:"inline")
+#let pregunta  = (..args) => grid(columns:(1fr, 9fr), align:horizon)[
+  #text(size:3em)[❔]
+][
+  #text(size: 1.5em, style:"italic", weight:"extralight", fill:olive)[#todo(position:"inline", stroke:7pt + olive, ..args)]
+]
 #let missing-fig = rect.with( width: 100%, height: 3in, stroke: stroke(paint: red, thickness: 7pt))
 
 #show: it => basic-report(
@@ -35,6 +40,8 @@
 #let run_soa_i_100_coupler_30 = toml(run_soa_i_100_coupler_30_dir + "/conditions.toml")
 #let run_soa_i_50_coupler_30 = toml(run_soa_i_50_coupler_30_dir + "/conditions.toml")
 #let run_soa_i_50_coupler_25 = toml(run_soa_i_50_coupler_25_dir + "/conditions.toml")
+
+#outline(title: "TODOs", target: figure.where(kind: "todo"))
 
 = Único anillo con láser externo
 
@@ -223,57 +230,9 @@ A diferencia de los experiments B y C, en el experimento A no se oberva que la p
 )
 
 
-
-= Dos anillos interconectados con láser externo
-
-== Setup
-
-#figure(
-  // image("assets/hill2002_two _rings_setup_D.svg"),
-  missing-fig[Diagrama setup D, corregir posicion tap y pasar a pdf],
-  caption: [Setup de dos anillos.]
-)<fig:two_rings_setup_d>
-
-
-#todo-inline[
-  Comentario sobre la salida del EDFA y como afecta eso a las mediciones:
-    - Aletas de tiburon
-    - Sobrepico en el rise time
-]
-
-== Análisis transitorio
-
-#figure(
-  // image("assets/hill2002_two_rings_setup_D.svg"),
-  missing-fig[Transitorio de un anillo. Marcar el deadtime, rise time, y las "marcas" relacionadas a la longitud del anillo],
-  caption: []
-)<fig:transitorio>
-
-#todo-inline([Dead-time: causas, y en que afecta al sistema (especialmente histeresis)])
-#todo-inline([Dead-time: rise-time, y en que afecta al sistema (especialmente histeresis)])
-
-#todo-inline([Efecto de histeresis en ancho de banda del sistema])
-
-
-== Análisis estacionario
-
-#todo-inline([Efecto de mover el control de polarizacion incluso manteniendo los T11, T12, T21 and T22])
-
-#todo-inline([1 anillo, P_ring_1 vs P_ext teorica y medida en funcion de las T del anillo (con PC en el punto de maxima interferencia)])
-
-#todo-inline([1 anillo, P_ring_1 vs P_ext teorica y medida en funcion de las T del anillo (con PC en el punto de maxima interferencia)])
-
-#todo-inline([2 anillos, P_ring_1 y P_ring_2 vs P_ext teorica y medida en funcion de las T de los anillos (con PC en el punto de maxima interferencia)])
-
-
-#todo-inline([1 anillo, P_ring_1 vs P_ext teorica y medida (con PC en el punto de maxima interferencia)])
-
-
 = Anexo
 
-== Único anillo con láser externo
-
-=== Parámetros del setup<sec:single_ring_setup_componentes>
+== Parámetros del setup<sec:single_ring_setup_componentes>
 
 #table(
   columns: (2fr,3fr),
