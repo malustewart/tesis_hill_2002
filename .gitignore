@@ -9,6 +9,7 @@ temp/
 dummy_spectrum.csv
 plot_osa_output.py
 informe/*.pdf
+informe/**/*raw.png
 informe/assets/*setup.svg
 Réplica Hill 2002 presentación.pdf
 Réplica Hill 2002.gslides
