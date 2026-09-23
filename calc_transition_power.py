@@ -52,44 +52,21 @@ def calc_transition_power(
         upper = lateral1
             
     return lower, center, upper
-
-
-def main():
-    from calc_T_estimation import T_est_by_Ptot_dB
-    from calc_T_estimation import G_dB_vs_Pout_curve_params_1 as params1
-    from calc_T_estimation import G_dB_vs_Pout_curve_params_2 as params2
-
-    def T1(Ptot1_mW):
-        return T_est_by_Ptot_dB(Ptot1_mW, params1)
-
-    def T2(Ptot2_mW):
-        return T_est_by_Ptot_dB(Ptot2_mW, params2)
-
-    Ptot1_mW = 2.56 / 0.56
-    Ptot2_mW = 1.04 / 0.56
-
-    # T11_dB = -9.14
-    T11_dB = T1(Ptot1_mW)
-    T12_dB = -9.43
-    T21_dB = -15.17
-    # T22_dB = -15.25
-    T22_dB = T2(Ptot2_mW)
-
-
-    lower, center, upper = calc_transition_power(
-        T11_dB,
-        T12_dB,
-        T21_dB,
-        T22_dB,
-        Ptot1_mW,
-        Ptot2_mW,
-    )
-
+def print_results(
+    T11_dB,
+    T12_dB,
+    T21_dB,
+    T22_dB,
+    Ptot1_mW,
+    Ptot2_mW,
+    lower, 
+    center, 
+    upper,
+):
     T11 = db_to_linear(T11_dB)
     T12 = db_to_linear(T12_dB)
     T21 = db_to_linear(T21_dB)
     T22 = db_to_linear(T22_dB)
-
 
     T1_diff = T11 - T12
     T2_diff = T22 - T21
@@ -116,17 +93,82 @@ def main():
 
     print()
 
-    print(f"T11 - T12 = {T1_diff}")
-    print(f"T22 - T21 = {T2_diff}")
-
     print(f"case A (Tii-Tij=0) (perfect step):")
     print(f"case B (Tii-Tij>0) (slope):")
     print(f"case C (Tii-Tij<0) (histeresis):")
+
+    print()
+
+    print(f"T11 - T12 = {T1_diff}")
+    print(f"T22 - T21 = {T2_diff}")
+
     print()
 
     print(f"\tlower: {lower}")
     print(f"\tcenter:{center}")
     print(f"\tupper: {upper}")
+    print(f"upper - lower: {upper - lower}")
+
+
+def main():
+
+    PC_max = {
+        "T11_dB": -9.14,
+        "T12_dB": -9.43,
+        "T21_dB": -15.17,
+        "T22_dB": -15.25,
+        "Ptot1_mW": 5.9817,
+        "Ptot2_mW": 2.1383,
+    }
+    PC_1_moved = {
+        "T11_dB": -9.14,
+        "T12_dB": -9.43,
+        "T21_dB": -15.17,
+        "T22_dB": -15.25,
+        "Ptot1_mW": 4.9608,
+        "Ptot2_mW": 2.1383,
+    }
+
+    PC_2_moved = {
+        "T11_dB": -9.14,
+        "T12_dB": -9.43,
+        "T21_dB": -15.17,
+        "T22_dB": -15.25,
+        "Ptot1_mW": 5.9817,
+        "Ptot2_mW": 1.2092,
+    }
+
+
+    PC_both_moved = {
+        "T11_dB": -9.14,
+        "T12_dB": -9.43,
+        "T21_dB": -15.17,
+        "T22_dB": -15.25,
+        "Ptot1_mW": 4.5438,
+        "Ptot2_mW": 1.8433,
+    }
+
+    for conditions, name in zip (
+        [PC_max, PC_1_moved, PC_2_moved, PC_both_moved],
+        ["PC_max", "PC_1_moved", "PC_2_moved", "PC_both_moved"],
+    ):
+
+        lower, center, upper = calc_transition_power(
+            **conditions
+        )
+
+        print()
+        print("*****")
+        print(f"CASE: {name}")
+        print("*****")
+        print()
+
+        print_results(
+            **conditions,
+            lower=lower,
+            upper=upper,
+            center=center,
+        )
 
 
 if __name__=="__main__":
