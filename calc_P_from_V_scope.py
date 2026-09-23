@@ -64,6 +64,8 @@ class SetupDescription:
     meas_arrival_time_diff_scope_ch2_to_ch3_ns : float = 0.0
 
     T1in_dB = -5.4
+    T1_iso_tbf_dB = -2.48
+    T2_iso_tbf_dB = -2.48
 
 
 def parse_setup_description_toml(
@@ -127,6 +129,7 @@ def calc_P_ring_1(setup_description : SetupDescription, V_scope_mV : float):
         meas_power_ch2_dBm
         + setup_description.tap_1_loss_in_to_out_meas_dB
         - setup_description.tap_1_loss_in_to_out_pass_dB
+        - setup_description.T1_iso_tbf_dB
     )
     real_power_ring_laser_1 = pow(10, real_power_ring_laser_1_dBm / 10)
 
@@ -152,6 +155,7 @@ def calc_P_ring_2(setup_description : SetupDescription, V_scope_mV : float):
         meas_power_ch3_dBm
         + setup_description.tap_2_loss_in_to_out_meas_dB
         - setup_description.tap_2_loss_in_to_out_pass_dB
+        - setup_description.T2_iso_tbf_dB
     )
 
     # real optical powers (mW)
